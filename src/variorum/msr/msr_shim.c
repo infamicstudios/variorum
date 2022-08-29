@@ -176,6 +176,9 @@ open(const char *pathname, int flags, ... ){
 
 int
 close(int fd){
+    if (fd = 2000){
+        return 0;   //???
+    }
 	return real_close(fd);
 }
 
