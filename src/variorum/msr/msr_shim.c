@@ -5,10 +5,10 @@
 
 /* msr_fake.c
  * Compile:
- * gcc -Wextra -Werror -shared -fPIC -ldl -o msr_fake.so msr_fake.c
+ * gcc -Wextra -Werror -shared -fPIC -ldl -o msr_shim.so msr_shim.c
  *
  * Use:
- * LD_PRELOAD=./msr_fake.so ~/copperopolis/build/examples/variorum-print-frequency-example
+ * LD_PRELOAD=./msr_shim.so ~/variorum_shim/variorum/build_lupine/examples/variorum-print-frequency-example
  */
 
 
@@ -29,6 +29,7 @@
 #include "msr_core.h"
 //#include "063f_msr_samples.h"
 #include <errno.h>
+#include "../variorum_topology.h"
 
 // This can be made arbitrarily more complicated.
 enum {
@@ -144,6 +145,25 @@ isMSRSafeFile(const char *pathname) {
    }
 }
 
+int
+msrErrors(){
+    int errcode = 0;
+    char* my_env_var = getenv("MSRFORCEDERROR");
+    if (my_env_var == "MSRDOESNOTEXIST"){
+        errcode = 5;
+    }
+    else if (my_env_var == "MSRNOTINALLOWLIST"){
+        errcode = 13;
+    }
+    else if (my_env_var == "MSRNOTPERMITTED"){
+        errcode = 13;
+    }
+    else if (my_env_var == "MSRSAFENONEXISTANT"){
+        errcode = 2;
+    }
+    return errcode;
+}
+
 //
 // Interceptors
 //
@@ -151,7 +171,7 @@ int
 open(const char *pathname, int flags, ... ){
 
 	mode_t mode=0;
-
+    
 	// Stanza taken from https://musl.libc.org
 	if ((flags & O_CREAT) || (flags & O_TMPFILE) == O_TMPFILE) {
                 va_list ap;
@@ -195,6 +215,11 @@ pread(int fd, void *buf, size_t count, off_t offset){
          * Then get the value of the msr address
          * if it is invalid return an error otherwise return size of address in bytes (8).
          */
+        if (msrErrors() != 0) {
+            errno = msrErrors();
+            return -1;
+        }
+
         if (offset < 0) {
             errno = EDOM;
             return -1;
@@ -259,6 +284,7 @@ pwrite(int fd, const void *buf, size_t count, off_t offset){
     }
 }
 
+
 int
 ioctl(int fd, unsigned long request, ...){
 	// This is going to be a bit squirrely, as there's no way of knowing
@@ -272,11 +298,44 @@ ioctl(int fd, unsigned long request, ...){
 	va_start(ap, request);
 	arg_p = va_arg(ap, char*);
 	va_end(ap);
-
+    struct msr_batch_array *p = (struct msr_batch_array *) &arg_p;
+    struct msr_batch_op *op;
+    int res = 0;
+    uint64_t writeResultMSR;
+    
 	if( fd==BATCH_FD && request==X86_IOC_MSR_BATCH ){
-		// do batch processing here.
-		return 0;
-	}else{
+        //TODO: EXPAND TO COVER ALL CPUS
+        for (op = p->ops; op < p->ops + p->numops; ++op) { //Iterate setting op
+           
+           if (op->cpu > variorum_get_num_cores()){ // If CPU is invalid
+                errno = ENXIO;
+                res = op->err; //Maybe not correct
+                continue;
+           }
+           
+           //TODO: Add another Error for isAllowed using an MSRSAFE error code. 
+           if (!MSRDAT[op->msr].valid || !MSRDAT[op->msr].isAllowed){
+                errno = EFAULT;
+                //op->err = //TODO: Not Sure what to set this as.
+                continue; // I think this should continue not certain???
+           }
+           if (op->isrdmsr) { // Read MSR
+               //pread(fd,*op->msrdata, 1, op->msr) // This is almost certainly incorrect
+               // TODO: It probably  makes more sense to just call pread here.
+               op->msrdata = MSRDAT[op->msr].value; 
+               res = op->err;
+               continue;
+           }
+            else { // TODO: And call pwrite here? I think this is probably broken and results maybe require saving.
+               writeResultMSR = op->wmask & op->msrdata; // This might need casting.
+               MSRDAT[op->msr].value = MSRDAT[op->msr].writeMask & writeResultMSR; 
+               res = op->err;
+               continue;
+            }
+        }
+		return res;
+	}
+    else{
 		return real_ioctl( fd, request, arg_p );
 	}
 }
