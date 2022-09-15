@@ -149,18 +149,20 @@ int
 msrErrors(){
     int errcode = 0;
     char* my_env_var = getenv("MSRFORCEDERROR");
-    if (my_env_var == "MSRDOESNOTEXIST"){
+    if (strcmp(my_env_var, "MSRDOESNOTEXIST") == 0 ) {
+        printf("Working");
         errcode = 5;
     }
-    else if (my_env_var == "MSRNOTINALLOWLIST"){
+    else if (strcmp(my_env_var,"MSRNOTINALLOWLIST") == 0 ){
         errcode = 13;
     }
-    else if (my_env_var == "MSRNOTPERMITTED"){
+    else if (strcmp(my_env_var, "MSRNOTPERMITTED") == 0 ){
         errcode = 13;
     }
-    else if (my_env_var == "MSRSAFENONEXISTANT"){
+    else if (strcmp(my_env_var, "MSRSAFENONEXISTANT") == 0) {
         errcode = 2;
     }
+    printf("This Code Gets hit");
     return errcode;
 }
 
@@ -317,7 +319,7 @@ ioctl(int fd, unsigned long request, ...){
            if (!MSRDAT[op->msr].valid || !MSRDAT[op->msr].isAllowed){
                 errno = EFAULT;
                 //op->err = //TODO: Not Sure what to set this as.
-                continue; // I think this should continue not certain???
+                continue;
            }
            if (op->isrdmsr) { // Read MSR
                //pread(fd,*op->msrdata, 1, op->msr) // This is almost certainly incorrect
