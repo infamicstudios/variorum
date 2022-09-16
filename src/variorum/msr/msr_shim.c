@@ -294,7 +294,7 @@ open(const char *pathname, int flags, ... ){
  */
 int
 close(int fd){
-    if (fd = DUMMYFD){
+    if (fd == DUMMYFD){
         return 0;
     }
 	return real_close(fd);
