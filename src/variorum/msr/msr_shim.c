@@ -131,9 +131,16 @@ real_stat(const char *pathname, struct stat *statbuf){
 //
 
 
+/**
+ * Evaulate a filepath to odetermine if it is 
+ * a cpu msr file path. 
+ * 
+ * @param pathname a file path to evaluate 
+ * @return True if file path is of MSR type else false
+ *
+ */
 bool
-isMSRSafeFile(const char *pathname) {
-   
+isMSRSafeFile(const char *pathname) {   
    int cpunum;
    int res = sscanf(pathname, "/dev/cpu/%d/msr", &cpunum);
 
@@ -145,12 +152,27 @@ isMSRSafeFile(const char *pathname) {
    }
 }
 
+
+/**
+ * Evaulate bash enviromental variable MSRFORCEDERROR 
+ * and return relevant errno values
+ * 
+ * I am not 100% sure this works. This might not necessarily
+ * be broken but it's use  in pread() probably is.
+ *
+ * @return A relevant integer error or 0 if MSRFORCEDERROR is unset
+ *
+ * TODO: Verify & / or  change errcode values and refactor to follow
+ * format of batch_msr_Errors() if deemed appropriate. 
+ */
 int
 msrErrors(){
     int errcode = 0;
     char* my_env_var = getenv("MSRFORCEDERROR");
+    if (NULL == my_env_var) {
+        return errcode;
+    }
     if (strcmp(my_env_var, "MSRDOESNOTEXIST") == 0 ) {
-        printf("Working");
         errcode = 5;
     }
     else if (strcmp(my_env_var,"MSRNOTINALLOWLIST") == 0 ){
@@ -162,13 +184,75 @@ msrErrors(){
     else if (strcmp(my_env_var, "MSRSAFENONEXISTANT") == 0) {
         errcode = 2;
     }
-    printf("This Code Gets hit");
     return errcode;
 }
+
+
+/**
+ * Evaulate bash enviromental variable MSRFORCEDERROR 
+ * and return relevant msr batch errno values
+ *  
+ * I might be confusing error types here. Use of method in IOCTL is
+ * nonfunctional as the differences between the error types and what / how 
+ * to set array op errors is unclear. 
+ *
+ * @return A relevant integer error or 0 if MSRFORCEDERROR is unset.
+ *
+ * TODO: Verify & / or change errcode values and fix use of this in IOCTL so it will actually
+ * Interrupt and set error codes correctly.
+ */
+static long  
+batch_msr_Errors(){
+    /*
+     * batch_msr_errors evaluates envirometal variable MSRFORCEDERROR 
+     * for the following possible errors that can be forced by the shim user
+     *
+     */
+    char* my_env_var = getenv("MSRFORCEDERROR");
+    if (NULL == my_env_var) {
+       return 0;
+    }
+    if (strcmp(my_env_var, "BADIOCTL") == 0 ) {
+        return -ENOTTY;
+    }
+    if (strcmp(my_env_var, "FILENOTOPEN") == 0 ) {
+        return -EBADF;
+    }
+    if (strcmp(my_env_var, "BADNUMOPS") == 0 ) {
+        return -EINVAL;
+    }
+    if (strcmp(my_env_var, "NOMEMORY") == 0 ) {
+        return -ENOMEM;
+    }
+    if (strcmp(my_env_var, "CPBATCHDESCRIPTORFAIL") == 0 ||
+        strcmp(my_env_var, "CPBATCHARRAYFAIL") == 0) {
+        return -EFAULT;
+    }
+    return 0;
+}
+
 
 //
 // Interceptors
 //
+
+
+/**
+ * Intercept open calls made 
+ *
+ * Intecept open calls and identify if the open call is to an /dev/cpu/#/msr 
+ * file. In this instance pass back a dummy file descriptor otherwise normally
+ * open the file  
+ *
+ * @propety pathname, The file path of files being attempted to open.
+ * @return magic constant 2000 if file path is identified as MSR 
+ * otherwise the true file descriptor.
+ *
+ * TODO: Modify so it's at least not using an undeclared magic number
+ * as the dummy file descriptor. 
+ * Make the file descriptor CPU dependant and generate dummy
+ * File desciptors based on CPU Number.
+ */
 int
 open(const char *pathname, int flags, ... ){
 
@@ -186,8 +270,7 @@ open(const char *pathname, int flags, ... ){
     if (isMSRSafeFile(pathname)) {    
         fprintf( stdout, "BLR: %s:%d Intercepted open() call to MSR Device %s\n",
 		    	__FILE__, __LINE__, pathname );
-	// TODO: Make the file descriptor CPU dependant
-        return 2000;     
+        return 2000; //TODO: make Global variable DUMMYFD.
     }
 
     //Otherwise open normally
@@ -196,49 +279,70 @@ open(const char *pathname, int flags, ... ){
     }
 }
 
+
+/**
+ * Intercept close calls  
+ *
+ * Intecept close calls and if they are to the dummy file descriptor return sucess 
+ * (because the dummy file descriptor was never a real file opened in the first place.
+ *
+ * @propety fd, File descriptor to close
+ * @return 0 if success  
+ *
+ */
 int
 close(int fd){
     if (fd = 2000){
-        return 0;   //???
+        return 0;
     }
 	return real_close(fd);
 }
 
 
-// 
-// Intercept calls to fake file descriptor 
-//
+
+/**
+ * Intercept calls to pread on the fake file descriptor and return emulated data.  
+ *
+ * Retrieve the struct msr of the requested MSR from stored MSR's in array MSRDAT
+ * Then get the value of the msr address and if it is invalid return an error 
+ * otherwise return size of address in bytes (8).
+ 
+ * @propety fd, File descriptor 2000 if shim
+ * @property buf, what to write the read results into
+ * @property count, size of MSR data
+ * @property offset, the offset of the MSR
+ * @return 8 if success  
+ *
+ * TODO: use of msrErrors() does not seem to currently interrupt this method or
+ * operate as intended
+ */
 ssize_t
 pread(int fd, void *buf, size_t count, off_t offset){
 
     if (fd == 2000){
-        /*
-         * Retrieve the struct msr  of requested MSR from stored MSR's in array MSRDAT
-         * Then get the value of the msr address
-         * if it is invalid return an error otherwise return size of address in bytes (8).
-         */
+        //TODO:make msrErrors interrupt pread if an error occurs and correctly set error value.
         if (msrErrors() != 0) {
             errno = msrErrors();
             return -1;
         }
 
-        if (offset < 0) {
+        if (offset < 0) { // Validate offset
             errno = EDOM;
             return -1;
         }
 
         // Validate offset
         if ( (size_t) offset > sizeof(MSRDAT)/sizeof(MSRDAT[0])){
-            errno = EDOM; // Not sure if this is the right error for this.
+            errno = EDOM; //TODO: Not sure if this is the right error for this.
             return -1;
         }
         
-        //Validate count
+        // Validate count
         if (count > 8) {
-            errno = EOVERFLOW; // Not sure about this one either
+            errno = EOVERFLOW; //TODO: Not sure about this one either
             return -1;
         }
-
+        // Read Values
         if (MSRDAT[offset].valid) {
             *(uint64_t*) buf = MSRDAT[offset].value;
             return sizeof(uint64_t);
@@ -252,6 +356,22 @@ pread(int fd, void *buf, size_t count, off_t offset){
 }
 
 
+
+/**
+ * Intercept pwrite calls on the fake file descriptor and write them to emulated data.  
+ *
+ * Intercepts pwrite calls, checks the allowlists to see if the MSR is in the writemask
+ * and then write to the emulated MSR following Allowlist and writemask rules.
+ *
+ * @propety fd, File descriptor 2000 if shim
+ * @property buf, what to write the read results into
+ * @property count, size of MSR data
+ * @property offset, the offset of the MSR
+ * @return 8 if success  
+ *
+ * TODO: use of msrErrors() needs to be extended to this method and all it's
+ * possible resultant errors and then a way of calling it needs to be added.
+ */
 ssize_t
 pwrite(int fd, const void *buf, size_t count, off_t offset){
     /*
@@ -271,7 +391,6 @@ pwrite(int fd, const void *buf, size_t count, off_t offset){
         // Verify the MSR is allowed in the allowlist.
         if (MSRDAT[offset].valid && MSRDAT[offset].isAllowed) {
               // Apply the allowlist mask and write.
-              // THIS LINE IS A BIT QUESTIONABLE.
               MSRDAT[offset].value = MSRDAT[offset].writeMask & *(uint64_t*) buf;
               return sizeof(uint64_t);
         }
@@ -286,6 +405,23 @@ pwrite(int fd, const void *buf, size_t count, off_t offset){
     }
 }
 
+
+
+/**
+ * Intercept ioctl calls on perform ioctl operations on emulated data.  
+ *
+ * Intercepts ioctl calls, and run through IOCTL batch operations on emulated data
+ * following the writemask rules in the op struct.
+ *
+ * @propety fd, File descriptor 2000 if shim
+ * @property buf, what to write the read results into
+ * @property arg_p, msr_batch_array
+ * @return batch op results  
+ *
+ * TODO: Use of forced_errs does not currently work as this does not operate on errno.
+ * Find what err constant to set and set that to result of forced_errs.
+ * Extent emulation data to handle multiple CPUs.
+ */
 
 int
 ioctl(int fd, unsigned long request, ...){
@@ -304,32 +440,35 @@ ioctl(int fd, unsigned long request, ...){
     struct msr_batch_op *op;
     int res = 0;
     uint64_t writeResultMSR;
-    
+    long int forced_errs = batch_msr_Errors();
+
+
 	if( fd==BATCH_FD && request==X86_IOC_MSR_BATCH ){
-        //TODO: EXPAND TO COVER ALL CPUS
         for (op = p->ops; op < p->ops + p->numops; ++op) { //Iterate setting op
-           
+                
+            if (forced_errs != 0) {
+                errno = forced_errs;
+                continue;
+           }        
+                       
            if (op->cpu > variorum_get_num_cores()){ // If CPU is invalid
                 errno = ENXIO;
                 res = op->err; //Maybe not correct
                 continue;
            }
            
-           //TODO: Add another Error for isAllowed using an MSRSAFE error code. 
            if (!MSRDAT[op->msr].valid || !MSRDAT[op->msr].isAllowed){
                 errno = EFAULT;
                 //op->err = //TODO: Not Sure what to set this as.
                 continue;
            }
            if (op->isrdmsr) { // Read MSR
-               //pread(fd,*op->msrdata, 1, op->msr) // This is almost certainly incorrect
-               // TODO: It probably  makes more sense to just call pread here.
                op->msrdata = MSRDAT[op->msr].value; 
                res = op->err;
                continue;
            }
-            else { // TODO: And call pwrite here? I think this is probably broken and results maybe require saving.
-               writeResultMSR = op->wmask & op->msrdata; // This might need casting.
+           else { //Write MSR
+               writeResultMSR = op->wmask & op->msrdata;
                MSRDAT[op->msr].value = MSRDAT[op->msr].writeMask & writeResultMSR; 
                res = op->err;
                continue;
