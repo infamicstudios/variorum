@@ -31,6 +31,9 @@
 #include <errno.h>
 #include "../variorum_topology.h"
 
+
+const int DUMMYFD = 2000; // Used as the file descriptor for any MSR call.
+
 // This can be made arbitrarily more complicated.
 enum {
 	ALLOWLIST_FD=4097,
@@ -245,11 +248,10 @@ batch_msr_Errors(){
  * open the file  
  *
  * @propety pathname, The file path of files being attempted to open.
- * @return magic constant 2000 if file path is identified as MSR 
+ * @return DUMMYFD if file path is identified as MSR 
  * otherwise the true file descriptor.
  *
- * TODO: Modify so it's at least not using an undeclared magic number
- * as the dummy file descriptor. 
+ * TODO: 
  * Make the file descriptor CPU dependant and generate dummy
  * File desciptors based on CPU Number.
  */
@@ -270,7 +272,7 @@ open(const char *pathname, int flags, ... ){
     if (isMSRSafeFile(pathname)) {    
         fprintf( stdout, "BLR: %s:%d Intercepted open() call to MSR Device %s\n",
 		    	__FILE__, __LINE__, pathname );
-        return 2000; //TODO: make Global variable DUMMYFD.
+        return DUMMYFD; 
     }
 
     //Otherwise open normally
@@ -292,7 +294,7 @@ open(const char *pathname, int flags, ... ){
  */
 int
 close(int fd){
-    if (fd = 2000){
+    if (fd = DUMMYFD){
         return 0;
     }
 	return real_close(fd);
@@ -307,7 +309,7 @@ close(int fd){
  * Then get the value of the msr address and if it is invalid return an error 
  * otherwise return size of address in bytes (8).
  
- * @propety fd, File descriptor 2000 if shim
+ * @propety fd, File descriptor DUMMYFD (2000) if shim
  * @property buf, what to write the read results into
  * @property count, size of MSR data
  * @property offset, the offset of the MSR
@@ -319,7 +321,7 @@ close(int fd){
 ssize_t
 pread(int fd, void *buf, size_t count, off_t offset){
 
-    if (fd == 2000){
+    if (fd == DUMMYFD){
         //TODO:make msrErrors interrupt pread if an error occurs and correctly set error value.
         if (msrErrors() != 0) {
             errno = msrErrors();
@@ -363,7 +365,7 @@ pread(int fd, void *buf, size_t count, off_t offset){
  * Intercepts pwrite calls, checks the allowlists to see if the MSR is in the writemask
  * and then write to the emulated MSR following Allowlist and writemask rules.
  *
- * @propety fd, File descriptor 2000 if shim
+ * @propety fd, File descriptor DUMMYFD if shim
  * @property buf, what to write the read results into
  * @property count, size of MSR data
  * @property offset, the offset of the MSR
@@ -381,7 +383,7 @@ pwrite(int fd, const void *buf, size_t count, off_t offset){
      *
      */
 
-    if (fd == 2000) {
+    if (fd == DUMMYFD) {
 
         if ( (size_t) offset > sizeof(MSRDAT)/sizeof(MSRDAT[0])){ 
             errno = EDOM; // Again sure if this is the best error for this.
@@ -413,7 +415,7 @@ pwrite(int fd, const void *buf, size_t count, off_t offset){
  * Intercepts ioctl calls, and run through IOCTL batch operations on emulated data
  * following the writemask rules in the op struct.
  *
- * @propety fd, File descriptor 2000 if shim
+ * @propety fd, File descriptor DUMMYFD if shim
  * @property buf, what to write the read results into
  * @property arg_p, msr_batch_array
  * @return batch op results  
