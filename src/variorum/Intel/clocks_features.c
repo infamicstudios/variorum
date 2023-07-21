@@ -547,21 +547,38 @@ void get_available_frequencies_skx(FILE *writedest, off_t *msr_platform_info,
     int err = get_max_non_turbo_ratio(*msr_platform_info, &max_non_turbo_ratio);
     if (!err)
     {
+#ifdef CPRINTF_FOUND
+        cfprintf(writedest, "%-s = %d\n", "Max Efficiency Ratio", max_non_turbo_ratio);
+#else
         fprintf(writedest, "Max Efficiency Ratio = %d MHz\n",
                 max_non_turbo_ratio);
+#endif
     }
     err = get_max_efficiency_ratio(*msr_platform_info, &max_eff_ratio);
     if (!err)
     {
+#ifdef CPRINTF_FOUND
+        cfprintf(writedest, "%-s = %d\n", "Max Non-Turbo Ratio", max_eff_ratio);
+#else
         fprintf(writedest, "Max Non-Turbo Ratio  = %d MHz\n",
                 max_eff_ratio);
+#endif
     }
     err = get_min_operating_ratio(*msr_platform_info, &min_oper_ratio);
     if (!err)
     {
+#ifdef CPRINTF_FOUND
+        cfprintf(writedest, "%-s = %d\n", "Min Operating Ratio", min_oper_ratio);
+#else
         fprintf(writedest, "Min Operating Ratio  = %d MHz\n",
                 min_oper_ratio);
+#endif
     }
+
+#ifdef CPRINTF_FOUND
+    cflush();
+#endif
+
 }
 
 void get_available_frequencies(FILE *writedest, off_t *msr_platform_info,
@@ -603,19 +620,35 @@ void get_available_frequencies(FILE *writedest, off_t *msr_platform_info,
     int err = get_max_non_turbo_ratio(*msr_platform_info, &max_non_turbo_ratio);
     if (!err)
     {
+#ifdef CPRINTF_FOUND
+        cfprintf(writedest, "%-s = %d\n", "Max Efficiency Ratio", max_non_turbo_ratio);
+#else
         fprintf(writedest, "Max Efficiency Ratio = %d MHz\n",
                 max_non_turbo_ratio);
+#endif
     }
     err = get_max_efficiency_ratio(*msr_platform_info, &max_eff_ratio);
     if (!err)
     {
+#ifdef CPRINTF_FOUND
+        cfprintf(writedest, "%-s = %d\n", "Max Non-Turbo Ratio", max_eff_ratio);
+#else
         fprintf(writedest, "Max Non-Turbo Ratio  = %d MHz\n",
                 max_eff_ratio);
+#endif
     }
     err = get_min_operating_ratio(*msr_platform_info, &min_oper_ratio);
     if (!err)
     {
+#ifdef CPRINTF_FOUND
+        cfprintf(writedest, "%-s = %d\n", "Min Operating Ratio", min_oper_ratio);
+#else
         fprintf(writedest, "Min Operating Ratio  = %d MHz\n",
                 min_oper_ratio);
+#endif
     }
+
+#ifdef CPRINTF_FOUND
+    cflush();
+#endif  
 }
