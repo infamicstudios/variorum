@@ -297,6 +297,11 @@ void print_perfmon_counter_data(FILE *writedest, off_t *msrs_perfevtsel_ctrs,
     unsigned nthreads;
     int avail = 0;
 
+    const char* strings[] = { "_PERFORMANCE_MONITORING_COUNTERS", "Host", "Thread",
+                            "PMC0", "PMC1", "PMC2", "PMC3", "PMC4", "PMC5", "PMC6", "PMC7"};
+    int num_strings = sizeof(strings) / sizeof(strings[0]);
+    char format[256] = "";
+
     gethostname(hostname, 1024);
     avail = cpuid_num_pmc();
 #ifdef VARIORUM_WITH_INTEL_CPU
@@ -305,83 +310,18 @@ void print_perfmon_counter_data(FILE *writedest, off_t *msrs_perfevtsel_ctrs,
 
     if (p == NULL && !init)
     {
-
-
+        for(int i = 0; i < avail + 3; i++) //Build a format string for the number of counters available
+        {
+            if(i < num_strings)
+            {
+                strcat(format, "%s ");
+            }
+        }
+        format[strlen(format) - 1] = '\n'; // Replace last space with newline
 #ifdef CPRINTF_FOUND
-        switch (avail)
-        {
-            case 8:
-                cfprintf(writedest, "%s %s %s %s %s %s %s %s %s %s\n",
-                         "_PERFORMANCE_MONITORING_COUNTERS", "Host", "Thread", "PMC0", "PMC1", "PMC2",
-                         "PMC3", "PMC4", "PMC5", "PMC6", "PMC7");
-                break;
-            case 7:
-                cfprintf(writedest, "%s %s %s %s %s %s %s %s %s\n",
-                         "_PERFORMANCE_MONITORING_COUNTERS", "Host", "Thread", "PMC0", "PMC1", "PMC2",
-                         "PMC3", "PMC4", "PMC5", "PMC6");
-                break;
-            case 6:
-                cfprintf(writedest, "%s %s %s %s %s %s %s %s\n",
-                         "_PERFORMANCE_MONITORING_COUNTERS", "Host", "Thread", "PMC0", "PMC1", "PMC2",
-                         "PMC3", "PMC4", "PMC5");
-                break;
-            case 5:
-                cfprintf(writedest, "%s %s %s %s %s %s %s\n",
-                         "_PERFORMANCE_MONITORING_COUNTERS", "Host", "Thread", "PMC0", "PMC1", "PMC2",
-                         "PMC3", "PMC4");
-                break;
-            case 4:
-                cfprintf(writedest, "%s %s %s %s %s %s\n",
-                         "_PERFORMANCE_MONITORING_COUNTERS", "Host", "Thread", "PMC0", "PMC1", "PMC2",
-                         "PMC3");
-                break;
-            case 3:
-                cfprintf(writedest, "%s %s %s %s %s %s\n",
-                         "_PERFORMANCE_MONITORING_COUNTERS", "Host", "Thread", "PMC0", "PMC1", "PMC2");
-                break;
-            case 2:
-                cfprintf(writedest, "%s %s %s %s %s\n",
-                         "_PERFORMANCE_MONITORING_COUNTERS", "Host", "Thread", "PMC0", "PMC1");
-                break;
-            case 1:
-                cfprintf(writedest, "%s %s %s %s\n",
-                         "_PERFORMANCE_MONITORING_COUNTERS", "Host", "Thread", "PMC0");
-                break;
-        }
+        cfprintf(writedest, format, strings[0], strings[1], strings[2], strings[3], strings[4], strings[5], strings[6], strings[7], strings[8], strings[9], strings[10]);
 #else
-        switch (avail)
-        {
-            case 8:
-                fprintf(writedest,
-                        "_PERFORMANCE_MONITORING_COUNTERS Host Thread PMC0 PMC1 PMC2 PMC3 PMC4 PMC5 PMC6 PMC7\n");
-                break;
-            case 7:
-                fprintf(writedest,
-                        "_PERFORMANCE_MONITORING_COUNTERS Host Thread PMC0 PMC1 PMC2 PMC3 PMC4 PMC5 PMC6\n");
-                break;
-            case 6:
-                fprintf(writedest,
-                        "_PERFORMANCE_MONITORING_COUNTERS Host Thread PMC0 PMC1 PMC2 PMC3 PMC4 PMC5\n");
-                break;
-            case 5:
-                fprintf(writedest,
-                        "_PERFORMANCE_MONITORING_COUNTERS Host Thread PMC0 PMC1 PMC2 PMC3 PMC4\n");
-                break;
-            case 4:
-                fprintf(writedest,
-                        "_PERFORMANCE_MONITORING_COUNTERS Host Thread PMC0 PMC1 PMC2 PMC3\n");
-                break;
-            case 3:
-                fprintf(writedest,
-                        "_PERFORMANCE_MONITORING_COUNTERS Host Thread PMC0 PMC1 PMC2\n");
-                break;
-            case 2:
-                fprintf(writedest, "_PERFORMANCE_MONITORING_COUNTERS Host Thread PMC0 PMC1\n");
-                break;
-            case 1:
-                fprintf(writedest, "_PERFORMANCE_MONITORING_COUNTERS Host Thread PMC0\n");
-                break;
-        }
+        fprintf(writedest, format, strings[0], strings[1], strings[2], strings[3], strings[4], strings[5], strings[6], strings[7], strings[8], strings[9], strings[10]);
 #endif
         set_all_pmc_ctrl(0x0, 0x67, 0x00, 0xC4, 1, msrs_perfevtsel_ctrs);
         set_all_pmc_ctrl(0x0, 0x67, 0x00, 0xC4, 2, msrs_perfevtsel_ctrs);
