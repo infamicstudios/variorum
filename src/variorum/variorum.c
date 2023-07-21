@@ -817,9 +817,10 @@ int variorum_print_hyperthreading(void)
         int hyperthreading = (g_platform[i].num_threads_per_core == 1) ? 0 : 1;
         if (hyperthreading == 1)
         {
-#ifdef CPRINTF_FOUND
-            cfprintf(stdout, "  %-s %s\n", "Hyperthreading:", "Enabled");
-            cfprintf(stdout, "  %-s %-d\n", "Num Thread Per Core: ",
+#ifdef CPRINTF_FOUND 
+            //Spaces in label are needed TODO: fix libjustify to handle it properly
+            cfprintf(stdout, "%-s %s\n", "  Hyperthreading:", "Enabled");
+            cfprintf(stdout, "%-s %d\n", "  Num Thread Per Core:",
                     g_platform[i].num_threads_per_core);
 #else
             fprintf(stdout, "  Hyperthreading:       Enabled\n");
@@ -830,17 +831,19 @@ int variorum_print_hyperthreading(void)
         else
         {
 #ifdef CPRINTF_FOUND
-            cfprintf(stdout, "  %-s %s\n", "Hyperthreading:", "Disabled");
+            cfprintf(stdout, "%-s %s\n", "  Hyperthreading:", "Disabled");
 #else
             fprintf(stdout, "  Hyperthreading:       Disabled\n");
 #endif
         }
 
     }
-    err = variorum_exit(__FILE__, __FUNCTION__, __LINE__);
+
 #ifdef CPRINTF_FOUND
-    cflush(); //TODO, Create a silent version on err that still frees.
+    cflush();
 #endif
+
+    err = variorum_exit(__FILE__, __FUNCTION__, __LINE__);
     if (err)
     {
         return -1;
