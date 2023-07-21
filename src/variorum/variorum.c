@@ -815,29 +815,26 @@ int variorum_print_hyperthreading(void)
     for (i = 0; i < P_NUM_PLATFORMS; i++)
     {
         int hyperthreading = (g_platform[i].num_threads_per_core == 1) ? 0 : 1;
-        #ifdef CPRINTF_FOUND
-            if (hyperthreading == 1)
-            {
-                cfprintf(stdout, "  %-s %s\n", "Hyperthreading:", "Enabled");
-                cfprintf(stdout, "  %-s %-d\n", "Num Thread Per Core: ",
-                        g_platform[i].num_threads_per_core);
-            }
-            else
-            {
-                cfprintf(stdout, "  %-s %s\n", "Hyperthreading:", "Disabled");
-            }
-        #else
-            if (hyperthreading == 1)
-            {
-                fprintf(stdout, "  Hyperthreading:       Enabled\n");
-                fprintf(stdout, "  Num Thread Per Core:  %d\n",
-                        g_platform[i].num_threads_per_core);
-            }
-            else
-            {
-                fprintf(stdout, "  Hyperthreading:       Disabled\n");
-            }
-        #endif
+        if (hyperthreading == 1)
+        {
+#ifdef CPRINTF_FOUND
+            cfprintf(stdout, "  %-s %s\n", "Hyperthreading:", "Enabled");
+            cfprintf(stdout, "  %-s %-d\n", "Num Thread Per Core: ",
+                    g_platform[i].num_threads_per_core);
+#else
+            fprintf(stdout, "  Hyperthreading:       Enabled\n");
+            fprintf(stdout, "  Num Thread Per Core:  %d\n",
+                    g_platform[i].num_threads_per_core);
+#endif
+        }
+        else
+        {
+#ifdef CPRINTF_FOUND
+            cfprintf(stdout, "  %-s %s\n", "Hyperthreading:", "Disabled");
+#else
+            fprintf(stdout, "  Hyperthreading:       Disabled\n");
+#endif
+        }
 
     }
     err = variorum_exit(__FILE__, __FUNCTION__, __LINE__);
