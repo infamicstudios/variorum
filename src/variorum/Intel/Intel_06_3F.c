@@ -180,6 +180,103 @@ int intel_cpu_fm_06_3f_get_features(void)
         printf("Running %s\n", __FUNCTION__);
     }
 
+//Really not sure if this makes sense to use libjust here but the spaced
+// out format strings used normally is a bit weird.
+#ifdef CPRINTF_FOUND
+    cfprintf(stdout, "%s = 0x%-lx\n", "msr_platform_info",
+             msrs.msr_platform_info);
+    cfprintf(stdout, "%s = 0x%-lx\n", "ia32_time_stamp_counter",
+                msrs.ia32_time_stamp_counter);
+    cfprintf(stdout, "%s = 0x%-lx\n", "ia32_perf_ctl", msrs.ia32_perf_ctl);
+    cfprintf(stdout, "%s = 0x%-lx\n", "ia32_perf_status",
+                msrs.ia32_perf_status);
+    cfprintf(stdout, "%s = 0x%-lx\n", "ia32_therm_interrupt",
+                msrs.ia32_therm_interrupt);
+    cfprintf(stdout, "%s = 0x%-lx\n", "ia32_therm_status", 
+                msrs.ia32_therm_status);
+    cfprintf(stdout, "%s = 0x%-lx\n", "ia32_misc_enable",
+                msrs.ia32_misc_enable);
+    cfprintf(stdout, "%s = 0x%-lx\n", "msr_temperature_target",
+                msrs.msr_temperature_target);
+    cfprintf(stdout, "%s = 0x%-lx\n", "msr_turbo_ratio_limit",
+                msrs.msr_turbo_ratio_limit);
+    cfprintf(stdout, "%s = 0x%-lx\n", "msr_turbo_ratio_limit1",
+                msrs.msr_turbo_ratio_limit1);
+    cfprintf(stdout, "%s = 0x%-lx\n", "ia32_package_therm_status",
+                msrs.ia32_package_therm_status);
+    cfprintf(stdout, "%s = 0x%-lx\n", "ia32_package_therm_interrupt",
+                msrs.ia32_package_therm_interrupt);
+    cfprintf(stdout, "%s = 0x%-lx\n", "ia32_fixed_counters[0]",
+                msrs.ia32_fixed_counters[0]);
+    cfprintf(stdout, "%s = 0x%-lx\n", "ia32_fixed_counters[1]",
+                msrs.ia32_fixed_counters[1]);
+    cfprintf(stdout, "%s = 0x%-lx\n", "ia32_fixed_counters[2]",
+                msrs.ia32_fixed_counters[2]);
+    cfprintf(stdout, "%s = 0x%-lx\n", "ia32_fixed_ctr_ctrl",
+                msrs.ia32_fixed_ctr_ctrl);
+    cfprintf(stdout, "%s = 0x%-lx\n", "ia32_perf_global_status",
+                msrs.ia32_perf_global_status);
+    cfprintf(stdout, "%s = 0x%-lx\n", "ia32_perf_global_ctrl",
+                msrs.ia32_perf_global_ctrl);
+    cfprintf(stdout, "%s = 0x%-lx\n", "ia32_perf_global_ovf_ctrl",
+                msrs.ia32_perf_global_ovf_ctrl);
+    cfprintf(stdout, "%s = 0x%-lx\n", "msr_rapl_power_unit",
+                msrs.msr_rapl_power_unit);
+    cfprintf(stdout, "%s = 0x%-lx\n", "msr_pkg_power_limit",
+                msrs.msr_pkg_power_limit);
+    cfprintf(stdout, "%s = 0x%-lx\n", "msr_pkg_energy_status",
+                msrs.msr_pkg_energy_status);
+    cfprintf(stdout, "%s = 0x%-lx\n", "msr_pkg_perf_status",
+                msrs.msr_pkg_perf_status);
+    cfprintf(stdout, "%s = 0x%-lx", "msr_pkg_power_info",
+            msrs.msr_pkg_power_info);
+    cfprintf(stdout, "%s = 0x%-lx", "msr_dram_power_limit",
+            msrs.msr_dram_power_limit);
+    cfprintf(stdout, "%s = 0x%-lx", "msr_dram_energy_status",
+            msrs.msr_dram_energy_status);
+    cfprintf(stdout, "%s = 0x%-lx", "msr_dram_perf_status",
+            msrs.msr_dram_perf_status);
+    cfprintf(stdout, "%s = 0x%-lx", "msr_dram_power_info",
+            msrs.msr_dram_power_info);
+    cfprintf(stdout, "%s = 0x%-lx", "msr_turbo_activation_rat",
+            msrs.msr_turbo_activation_ratio);
+    cfprintf(stdout, "%s = 0x%-lx", "ia32_mperf", msrs.ia32_mperf);
+    cfprintf(stdout, "%s = 0x%-lx", "ia32_aperf", msrs.ia32_aperf);
+    cfprintf(stdout, "%s = 0x%-lx", "ia32_perfmon_counters[0]",
+            msrs.ia32_perfmon_counters[0]);
+    cfprintf(stdout, "%s = 0x%-lx", "ia32_perfmon_counters[1]",
+            msrs.ia32_perfmon_counters[1]);
+    cfprintf(stdout, "%s = 0x%-lx", "ia32_perfmon_counters[2]",
+            msrs.ia32_perfmon_counters[2]);
+    cfprintf(stdout, "%s = 0x%-lx", "ia32_perfmon_counters[3]",
+            msrs.ia32_perfmon_counters[3]);
+    cfprintf(stdout, "%s = 0x%-lx", "ia32_perfmon_counters[4]",
+            msrs.ia32_perfmon_counters[4]);
+    cfprintf(stdout, "%s = 0x%-lx", "ia32_perfmon_counters[5]",
+            msrs.ia32_perfmon_counters[5]);
+    cfprintf(stdout, "%s = 0x%-lx", "ia32_perfmon_counters[6]",
+            msrs.ia32_perfmon_counters[6]);
+    cfprintf(stdout, "%s = 0x%-lx", "ia32_perfmon_counters[7]",
+            msrs.ia32_perfmon_counters[7]);
+    cfprintf(stdout, "%s = 0x%-lx", "ia32_perfevtsel_counters[0]",
+            msrs.ia32_perfevtsel_counters[0]);
+    cfprintf(stdout, "%s = 0x%-lx", "ia32_perfevtsel_counters[1]",
+            msrs.ia32_perfevtsel_counters[1]);
+    cfprintf(stdout, "%s = 0x%-lx", "ia32_perfevtsel_counters[2]",
+            msrs.ia32_perfevtsel_counters[2]);
+    cfprintf(stdout, "%s = 0x%-lx", "ia32_perfevtsel_counters[3]",
+            msrs.ia32_perfevtsel_counters[3]);
+    cfprintf(stdout, "%s = 0x%-lx", "ia32_perfevtsel_counters[4]",
+            msrs.ia32_perfevtsel_counters[4]);
+    cfprintf(stdout, "%s = 0x%-lx", "ia32_perfevtsel_counters[5]",
+            msrs.ia32_perfevtsel_counters[5]);
+    cfprintf(stdout, "%s = 0x%-lx", "ia32_perfevtsel_counters[6]",
+            msrs.ia32_perfevtsel_counters[6]);
+    cfprintf(stdout, "%s = 0x%-lx", "ia32_perfevtsel_counters[7]",
+            msrs.ia32_perfevtsel_counters[7]);
+
+    cflush();
+#else
     fprintf(stdout, "msr_platform_info            = 0x%lx\n",
             msrs.msr_platform_info);
     fprintf(stdout, "ia32_time_stamp_counter      = 0x%lx\n",
@@ -271,6 +368,9 @@ int intel_cpu_fm_06_3f_get_features(void)
             msrs.ia32_perfevtsel_counters[6]);
     fprintf(stdout, "ia32_perfevtsel_counters[7]  = 0x%lx\n",
             msrs.ia32_perfevtsel_counters[7]);
+
+#endif
+
     return 0;
 }
 
