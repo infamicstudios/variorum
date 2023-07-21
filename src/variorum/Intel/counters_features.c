@@ -19,6 +19,10 @@
 #include <variorum_error.h>
 #include <variorum_timers.h>
 
+#ifdef CPRINTF_FOUND
+#include <cprintf.h>
+#endif
+
 int cpuid_num_pmc(void)
 {
     /* See Manual Vol 3B, Section 18.2.5 for details. */
@@ -255,8 +259,13 @@ void print_fixed_counter_data(FILE *writedest, off_t *msrs_fixed_ctrs)
 
     if (!init)
     {
-        fprintf(writedest,
-                "_FIXED_COUNTERS Host Thread InstRet UnhaltClkCycles UnhaltRefCycles\n");
+#ifdef CPRINTF_FOUND
+        cfprintf(writedest, "%s %s %s %s %s %s\n", 
+                "_FIXED_COUNTERS", "Host", "Thread", "InstRet", "UnhaltClkCycles", "UnhaltRefCycles");
+#else
+        fprintf(writedest, "%s %s %s %s %s %s\n", 
+                "_FIXED_COUNTERS", "Host", "Thread", "InstRet", "UnhaltClkCycles", "UnhaltRefCycles");
+#endif
         init = 1;
     }
 #ifdef VARIORUM_WITH_INTEL_CPU
@@ -268,8 +277,13 @@ void print_fixed_counter_data(FILE *writedest, off_t *msrs_fixed_ctrs)
     read_batch(FIXED_COUNTERS_DATA);
     for (i = 0; i < nthreads; i++)
     {
-        fprintf(writedest, "_FIXED_COUNTERS %s %d %lu %lu %lu\n", hostname, i,
-                *c0->value[i], *c1->value[i], *c2->value[i]);
+#ifdef CPRINTF_FOUND
+        cfprintf(writedest, "%s %s %d %lu %lu %lu\n", hostname, i,
+                "_FIXED_COUNTERS", *c0->value[i], *c1->value[i], *c2->value[i]);
+#else
+        fprintf(writedest, "%s %s %d %lu %lu %lu\n", hostname, i,
+                "_FIXED_COUNTERS", *c0->value[i], *c1->value[i], *c2->value[i]);
+#endif
     }
 }
 
@@ -291,6 +305,50 @@ void print_perfmon_counter_data(FILE *writedest, off_t *msrs_perfevtsel_ctrs,
 
     if (p == NULL && !init)
     {
+
+
+#ifdef CPRINTF_FOUND
+        switch (avail)
+        {
+            case 8:
+                cfprintf(writedest, "%s %s %s %s %s %s %s %s %s %s\n",
+                         "_PERFORMANCE_MONITORING_COUNTERS", "Host", "Thread", "PMC0", "PMC1", "PMC2",
+                         "PMC3", "PMC4", "PMC5", "PMC6", "PMC7");
+                break;
+            case 7:
+                cfprintf(writedest, "%s %s %s %s %s %s %s %s %s\n",
+                         "_PERFORMANCE_MONITORING_COUNTERS", "Host", "Thread", "PMC0", "PMC1", "PMC2",
+                         "PMC3", "PMC4", "PMC5", "PMC6");
+                break;
+            case 6:
+                cfprintf(writedest, "%s %s %s %s %s %s %s %s\n",
+                         "_PERFORMANCE_MONITORING_COUNTERS", "Host", "Thread", "PMC0", "PMC1", "PMC2",
+                         "PMC3", "PMC4", "PMC5");
+                break;
+            case 5:
+                cfprintf(writedest, "%s %s %s %s %s %s %s\n",
+                         "_PERFORMANCE_MONITORING_COUNTERS", "Host", "Thread", "PMC0", "PMC1", "PMC2",
+                         "PMC3", "PMC4");
+                break;
+            case 4:
+                cfprintf(writedest, "%s %s %s %s %s %s\n",
+                         "_PERFORMANCE_MONITORING_COUNTERS", "Host", "Thread", "PMC0", "PMC1", "PMC2",
+                         "PMC3");
+                break;
+            case 3:
+                cfprintf(writedest, "%s %s %s %s %s %s\n",
+                         "_PERFORMANCE_MONITORING_COUNTERS", "Host", "Thread", "PMC0", "PMC1", "PMC2");
+                break;
+            case 2:
+                cfprintf(writedest, "%s %s %s %s %s\n",
+                         "_PERFORMANCE_MONITORING_COUNTERS", "Host", "Thread", "PMC0", "PMC1");
+                break;
+            case 1:
+                cfprintf(writedest, "%s %s %s %s\n",
+                         "_PERFORMANCE_MONITORING_COUNTERS", "Host", "Thread", "PMC0");
+                break;
+        }
+#else
         switch (avail)
         {
             case 8:
@@ -324,7 +382,7 @@ void print_perfmon_counter_data(FILE *writedest, off_t *msrs_perfevtsel_ctrs,
                 fprintf(writedest, "_PERFORMANCE_MONITORING_COUNTERS Host Thread PMC0\n");
                 break;
         }
-
+#endif
         set_all_pmc_ctrl(0x0, 0x67, 0x00, 0xC4, 1, msrs_perfevtsel_ctrs);
         set_all_pmc_ctrl(0x0, 0x67, 0x00, 0xC4, 2, msrs_perfevtsel_ctrs);
         enable_pmc(msrs_perfevtsel_ctrs, msrs_perfmon_ctrs);
