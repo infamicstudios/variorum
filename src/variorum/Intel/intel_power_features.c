@@ -438,7 +438,8 @@ void print_rapl_power_unit(FILE *writedest, off_t msr)
 #endif
     for (socket = 0; socket < nsockets; socket++)
     {
-#ifdef CPRINTF_FOUND
+#ifdef CPRINTF_FOUND 
+        //Need to figure out how to do 0x in front.
         cfprintf(writedest, "%s %#lx %s %d %#lx %f %f %f\n", "_RAPL_POWER_UNITS", 
                 msr, hostname, socket, ru[socket].msr_rapl_power_unit, ru[socket].watts,
                 1 / ru[socket].joules, 1 / ru[socket].seconds);
@@ -516,20 +517,21 @@ void print_package_power_info(FILE *writedest, off_t msr, int socket)
                 "MaxPower_W", "MinPower_W", "MaxTimeWindow_sec", "ThermPower_W");
 
 #else
-        fprintf(writedest,
-                "_PACKAGE_POWER_INFO Offset Host Socket Bits MaxPower_W MinPower_W MaxTimeWindow_sec ThermPower_W\n");
+        fprintf(writedest, "%s %s %s %s %s %s %s %s %s\n",
+                "_PACKAGE_POWER_INFO", "Offset", "Host", "Socket", "Bits",
+                "MaxPower_W", "MinPower_W", "MaxTimeWindow_sec", "ThermPower_W");
 #endif
     }
 
     if (!get_rapl_pkg_power_info(socket, &info, msr))
     {
 #ifdef CPRINTF_FOUND
-        cfprintf(writedest, "%s %#lx %s %d %#lx %lf %lf %lf %lf\n",
+        cfprintf(writedest, "%s %#lx %s %d %#lx %lf %lf %lf %lf\n", //Todo same 0x problem here.
                 "_PACKAGE_POWER_INFO", msr, hostname, socket, info.msr_pkg_power_info, 
                 info.pkg_max_power, info.pkg_min_power, info.pkg_max_window, info.pkg_therm_power);
 #else
-        fprintf(writedest, "_PACKAGE_POWER_INFO 0x%lx %s %d 0x%lx %lf %lf %lf %lf\n",
-                msr, hostname, socket, info.msr_pkg_power_info, info.pkg_max_power,
+        fprintf(writedest, "%s 0x%lx %s %d 0x%lx %lf %lf %lf %lf\n",
+                "_PACKAGE_POWER_INFO", msr, hostname, socket, info.msr_pkg_power_info, info.pkg_max_power,
                 info.pkg_min_power, info.pkg_max_window, info.pkg_therm_power);
 #endif
     }
@@ -548,11 +550,29 @@ void print_verbose_package_power_info(FILE *writedest, off_t msr, int socket)
 
     if (!get_rapl_pkg_power_info(socket, &info, msr))
     {
+#ifdef CPRINTF_FOUND
+        cfprintf(writedest,
+                "%s: %#lx, %s: %s, %s: %d, %s: %#lx, %s: %lf W, %s: %lf W, %s: %lf sec, %s: %lf W\n",
+                "_PACKAGE_POWER_INFO Offset", msr,
+                "Host", hostname,
+                "Socket", socket,
+                "Bits", info.msr_pkg_power_info,
+                "MaxPower", info.pkg_max_power,
+                "MinPower", info.pkg_min_power,
+                "MaxTimeWindow", info.pkg_max_window,
+                "ThermPower", info.pkg_therm_power
+                );
+#else
         fprintf(writedest,
                 "_PACKAGE_POWER_INFO Offset: 0x%lx, Host: %s, Socket: %d, Bits: 0x%lx, MaxPower: %lf W, MinPower: %lf W, MaxTimeWindow: %lf sec, ThermPower: %lf W\n",
                 msr, hostname, socket, info.msr_pkg_power_info, info.pkg_max_power,
                 info.pkg_min_power, info.pkg_max_window, info.pkg_therm_power);
+#endif
     }
+
+#ifdef CPRINTF_FOUND
+    cflush();
+#endif
 }
 
 void print_dram_power_info(FILE *writedest, off_t msr, int socket)
@@ -566,16 +586,34 @@ void print_dram_power_info(FILE *writedest, off_t msr, int socket)
     if (!init_print_dram_power_info)
     {
         init_print_dram_power_info = 1;
-        fprintf(writedest,
-                "_DRAM_POWER_INFO Offset Host Socket Bits MaxPower_W MinPower_W MaxTimeWindow_sec ThermPower_W\n");
+#ifdef CPRINTF_FOUND
+        cfprintf(writedest,"%s %s %s %s %s %s %s %s %s\n",
+                "_DRAM_POWER_INFO", "Offset", "Host", "Socket", "Bits",
+                "MaxPower_W", "MinPower_W", "MaxTimeWindow_sec", "ThermPower_W");
+#else        
+        fprintf(writedest,"%s %s %s %s %s %s %s %s %s\n",
+                "_DRAM_POWER_INFO", "Offset", "Host", "Socket", "Bits",
+                "MaxPower_W", "MinPower_W", "MaxTimeWindow_sec", "ThermPower_W");
+#endif
     }
 
     if (!get_rapl_dram_power_info(socket, &info, msr))
     {
-        fprintf(writedest, "_DRAM_POWER_INFO 0x%lx %s %d 0x%lx %lf %lf %lf %lf\n",
-                msr, hostname, socket, info.msr_dram_power_info, info.dram_max_power,
+#ifdef CPRINTF_FOUND
+        cfprintf(writedest, "%s %#lx %s %d %#lx %lf %lf %lf %lf\n", //Todo same 0x problem here.
+                "_DRAM_POWER_INFO", msr, hostname, socket, info.msr_dram_power_info, 
+                info.dram_max_power, info.dram_min_power, info.dram_max_window, info.dram_therm_power)
+
+#else
+        fprintf(writedest, "%s 0x%lx %s %d 0x%lx %lf %lf %lf %lf\n",
+                "_DRAM_POWER_INFO", msr, hostname, socket, info.msr_dram_power_info, info.dram_max_power,
                 info.dram_min_power, info.dram_max_window, info.dram_therm_power);
+#endif
     }
+
+#ifdef CPRINTF_FOUND
+    cflush();
+#endif
 }
 
 void print_verbose_dram_power_info(FILE *writedest, off_t msr, int socket)
@@ -587,10 +625,25 @@ void print_verbose_dram_power_info(FILE *writedest, off_t msr, int socket)
 
     if (!get_rapl_dram_power_info(socket, &info, msr))
     {
+#ifdef CPRINTF_FOUND
+        cfprintf(writedest,
+                "%s: %#lx, %s: %s, %s: %d, %s: %#lx, %s: %lf W, %s: %lf W, %s: %lf sec, %s: %lf W\n",
+                "_DRAM_POWER_INFO Offset", msr,
+                "Host", hostname,
+                "Socket", socket,
+                "Bits", info.msr_dram_power_info,
+                "MaxPower", info.dram_max_power,
+                "MinPower", info.dram_min_power,
+                "MaxTimeWindow", info.dram_max_window,
+                "ThermPower", info.dram_therm_power
+                );
+        cflush();
+#else
         fprintf(writedest,
                 "_DRAM_POWER_INFO Offset: 0x%lx, Host: %s, Socket: %d, Bits: 0x%lx, MaxPower: %lf W, MinPower: %lf W, MaxTimeWindow: %lf sec, ThermPower: %lf W\n",
                 msr, hostname, socket, info.msr_dram_power_info, info.dram_max_power,
                 info.dram_min_power, info.dram_max_window, info.dram_therm_power);
+#endif
     }
 }
 
@@ -611,16 +664,33 @@ void print_package_power_limit(FILE *writedest, off_t msr_power_limit,
     if (!init_print_package_power_limit)
     {
         init_print_package_power_limit = 1;
-        fprintf(writedest,
-                "_PACKAGE_POWER_LIMIT Offset Host Socket Bits PowerLimit1_W TimeWindow1_sec PowerLimit2_W TimeWindow2_sec\n");
+#ifdef CPRINTF_FOUND
+        cfprintf(writedest, "%s %s %s %s %s %s %s %s %s\n",
+                "_PACKAGE_POWER_LIMIT", "Offset", "Host", "Socket", "Bits",
+                "PowerLimit1_W", "TimeWindow1_sec", "PowerLimit2_W", "TimeWindow2_sec");
+#else
+        fprintf(writedest, "%s %s %s %s %s %s %s %s %s\n",
+                "_PACKAGE_POWER_LIMIT", "Offset", "Host", "Socket", "Bits",
+                "PowerLimit1_W", "TimeWindow1_sec", "PowerLimit2_W", "TimeWindow2_sec");
+#endif
     }
 
     if (!get_package_rapl_limit(socket, &l1, &l2, msr_power_limit, msr_rapl_unit))
     {
-        fprintf(writedest, "_PACKAGE_POWER_LIMIT 0x%lx %s %d 0x%lx %lf %lf %lf %lf\n",
-                msr_power_limit, hostname, socket, l1.bits, l1.watts, l1.seconds, l2.watts,
-                l2.seconds);
+#ifdef CPRINTF_FOUND
+        cfprintf(writedest, "%s %#lx %s %d %#lx %lf %lf %lf %lf\n", //Todo same 0x problem here.
+                "_PACKAGE_POWER_LIMIT", msr_power_limit, hostname, socket, l1.bits,
+                l1.watts, l1.seconds, l2.watts, l2.seconds);
+#else
+        fprintf(writedest, "%s 0x%lx %s %d 0x%lx %lf %lf %lf %lf\n",
+                "_PACKAGE_POWER_LIMIT", msr_power_limit, hostname, socket, l1.bits, 
+                l1.watts, l1.seconds, l2.watts, l2.seconds);
+#endif
     }
+
+#ifdef CPRINTF_FOUND
+    cflush();
+#endif
 }
 
 void print_dram_power_limit(FILE *writedest, off_t msr_power_limit,
@@ -639,15 +709,33 @@ void print_dram_power_limit(FILE *writedest, off_t msr_power_limit,
     if (!init_print_dram_power_limit)
     {
         init_print_dram_power_limit = 1;
-        fprintf(writedest,
-                "_DRAM_POWER_LIMIT Offset Host Socket Bits PowerLimit_W TimeWindow_sec\n");
+#ifdef CPRINTF_FOUND
+        cfprintf(writedest, "%s %s %s %s %s %s %s\n",
+                "_DRAM_POWER_LIMIT", "Offset", "Host", "Socket", "Bits",
+                "PowerLimit_W", "TimeWindow_sec");
+#else
+        fprintf(writedest, "%s %s %s %s %s %s %s\n",
+                "_DRAM_POWER_LIMIT", "Offset", "Host", "Socket", "Bits",
+                "PowerLimit_W", "TimeWindow_sec");
+#endif
     }
 
     if (!get_dram_rapl_limit(socket, &l1, msr_power_limit, msr_rapl_unit))
     {
-        fprintf(writedest, "_DRAM_POWER_LIMIT 0x%lx %s %d 0x%lx %lf %lf\n",
-                msr_power_limit, hostname, socket, l1.bits, l1.watts, l1.seconds);
+#ifdef CPRINTF_FOUND
+        cfprintf(writedest, "%s %#lx %s %d %#lx %lf %lf\n", //Todo same 0x problem here.
+                "_DRAM_POWER_LIMIT", msr_power_limit, hostname, socket, l1.bits,
+                l1.watts, l1.seconds);
+#else
+        fprintf(writedest, "%s 0x%lx %s %d 0x%lx %lf %lf\n",
+                "_DRAM_POWER_LIMIT", msr_power_limit, hostname, socket, l1.bits, 
+                l1.watts, l1.seconds);
+#endif
     }
+
+#ifdef CPRINTF_FOUND
+    cflush();
+#endif
 }
 
 void print_verbose_package_power_limit(FILE *writedest, off_t msr_power_limit,
@@ -660,10 +748,25 @@ void print_verbose_package_power_limit(FILE *writedest, off_t msr_power_limit,
 
     if (!get_package_rapl_limit(socket, &l1, &l2, msr_power_limit, msr_rapl_unit))
     {
+#ifdef CPRINTF_FOUND
+        cfprintf(writedest,
+                "%s: %#lx, %s: %s, %s: %d, %s: %#lx, %s: %lf W, %s: %lf sec, %s: %lf W, %s: %lf sec\n",
+                "_PACKAGE_POWER_LIMIT Offset", msr_power_limit,
+                "Host", hostname,
+                "Socket", socket,
+                "Bits", l1.bits,
+                "PowerLimit1", l1.watts,
+                "TimeWindow1", l1.seconds,
+                "PowerLimit2", l2.watts,
+                "TimeWindow2", l2.seconds); 
+        cflush();
+
+#else
         fprintf(writedest,
                 "_PACKAGE_POWER_LIMIT Offset: 0x%lx, Host: %s, Socket: %d, Bits: 0x%lx, PowerLimit1: %lf W, TimeWindow1: %lf sec, PowerLimit2: %lf W, TimeWindow2: %lf sec\n",
                 msr_power_limit, hostname, socket, l1.bits, l1.watts, l1.seconds, l2.watts,
                 l2.seconds);
+#endif
     }
 }
 
@@ -677,9 +780,22 @@ void print_verbose_dram_power_limit(FILE *writedest, off_t msr_power_limit,
 
     if (!get_dram_rapl_limit(socket, &l1, msr_power_limit, msr_rapl_unit))
     {
+
+#ifdef CPRINTF_FOUND
+        cfprintf(writedest,
+                "%s: %#lx, %s: %s, %s: %d, %s: %#lx, %s: %lf W, %s: %lf sec\n",
+                "_DRAM_POWER_LIMIT Offset", msr_power_limit,
+                "Host", hostname,
+                "Socket", socket,
+                "Bits", l1.bits,
+                "PowerLimit", l1.watts,
+                "TimeWindow", l1.seconds);
+        cflush();
+#else
         fprintf(writedest,
                 "_DRAM_POWER_LIMIT Offset: 0x%lx, Host: %s, Socket: %d, Bits: 0x%lx, PowerLimit: %lf W, TimeWindow: %lf sec\n",
                 msr_power_limit, hostname, socket, l1.bits, l1.watts, l1.seconds);
+#endif
     }
 }
 
@@ -1052,6 +1168,34 @@ void print_verbose_power_data(FILE *writedest, off_t msr_rapl_unit,
         fprintf(writedest, "pkg%d_bits = %8.4lx   pkg%d_joules= %8.4f\n", i,
                 *rapl->pkg_bits[i], i, rapl->pkg_joules[i]);
 #endif
+#ifdef CPRINTF_FOUND
+        cfprintf(writedest,
+                "%s: %#lx, %s: %s, %s: %d, %s: %#lx, %s: %lf J, %s: %lf W, %s: %lf sec, %s: %lf W, %s: %lf J, %s: %lf W, %s: %lf sec, %s: %lf sec\n",
+                "_PACKAGE_ENERGY_STATUS Offset", msr_pkg_energy_status,
+                "Host", hostname,
+                "Socket", i,
+                "Bits", *rapl->pkg_bits[i],
+                "Energy", rapl->pkg_joules[i],
+                "Power", rapl->pkg_watts[i],
+                "Elapsed", rapl->elapsed,
+                "DeltaEnergy", rapl->pkg_delta_joules[i],
+                "DeltaPower", rapl->pkg_watts[i],
+                "DeltaElapsed", rapl->elapsed,
+                "Timestamp", now.tv_sec - start.tv_sec + (now.tv_usec - start.tv_usec) / 1000000.0);
+        cfprintf(writedest,
+                "%s: %#lx, %s: %s, %s: %d, %s: %#lx, %s: %lf J, %s: %lf W, %s: %lf sec, %s: %lf W, %s: %lf J, %s: %lf W, %s: %lf sec, %s: %lf sec\n",
+                "_DRAM_ENERGY_STATUS Offset", msr_dram_energy_status,
+                "Host", hostname,
+                "Socket", i,
+                "Bits", *rapl->dram_bits[i],
+                "Energy", rapl->dram_joules[i],
+                "Power", rapl->dram_watts[i],
+                "Elapsed", rapl->elapsed,
+                "DeltaEnergy", rapl->dram_delta_joules[i],
+                "DeltaPower", rapl->dram_watts[i],
+                "DeltaElapsed", rapl->elapsed,
+                "Timestamp", now.tv_sec - start.tv_sec + (now.tv_usec - start.tv_usec) / 1000000.0);
+#else
         fprintf(writedest,
                 "_PACKAGE_ENERGY_STATUS Offset: 0x%lx, Host: %s, Socket: %d, Bits: 0x%lx, Energy: %lf J, Power: %lf W, Elapsed: %lf sec, Timestamp: %lf sec\n",
                 msr_pkg_energy_status, hostname, i, *rapl->pkg_bits[i], rapl->pkg_joules[i],
@@ -1063,6 +1207,9 @@ void print_verbose_power_data(FILE *writedest, off_t msr_rapl_unit,
                 rapl->dram_watts[i], rapl->elapsed,
                 now.tv_sec - start.tv_sec + (now.tv_usec - start.tv_usec) / 1000000.0);
     }
+#ifdef CPRINTF_FOUND
+    cflush();
+#endif
 }
 
 void print_power_data(FILE *writedest, off_t msr_rapl_unit,
@@ -1086,32 +1233,65 @@ void print_power_data(FILE *writedest, off_t msr_rapl_unit,
     if (!init)
     {
         gettimeofday(&start, NULL);
-        fprintf(writedest,
-                "_PACKAGE_ENERGY_STATUS Offset Host Socket Bits Energy_J Power_W Elapsed_sec Timestamp_sec\n");
+#ifdef CPRINTF_FOUND
+        cfprintf(writedest, "%s %s %s %s %s %s %s %s\n",
+                "_PACKAGE_ENERGY_STATUS", "Offset", "Host", "Socket", "Bits",
+                "Energy_J", "Power_W", "Elapsed_sec", "Timestamp_sec");
+#else
+        fprintf(writedest, "%s %s %s %s %s %s %s %s\n",
+                "_PACKAGE_ENERGY_STATUS", "Offset", "Host", "Socket", "Bits",
+                "Energy_J", "Power_W", "Elapsed_sec", "Timestamp_sec");
+#endif
         rapl_storage(&rapl);
     }
     gettimeofday(&now, NULL);
     for (i = 0; i < nsockets; i++)
     {
-        fprintf(writedest, "_PACKAGE_ENERGY_STATUS 0x%lx %s %d 0x%lx %lf %lf %lf %lf\n",
-                msr_pkg_energy_status, hostname, i, *rapl->pkg_bits[i], rapl->pkg_joules[i],
+#ifdef CPRINTF_FOUND
+        cfprintf(writedest, "%s %#lx %s %d %#lx %lf %lf %lf %lf\n",
+                "_PACKAGE_ENERGY_STATUS", msr_pkg_energy_status, hostname, i, *rapl->pkg_bits[i],
+                rapl->pkg_joules[i], rapl->pkg_watts[i], rapl->elapsed,
+                now.tv_sec - start.tv_sec + (now.tv_usec - start.tv_usec) / 1000000.0);
+
+#else
+        fprintf(writedest, "%s 0x%lx %s %d 0x%lx %lf %lf %lf %lf\n",
+                "_PACKAGE_ENERGY_STATUS", msr_pkg_energy_status, hostname, i, *rapl->pkg_bits[i], rapl->pkg_joules[i],
                 rapl->pkg_watts[i], rapl->elapsed,
                 now.tv_sec - start.tv_sec + (now.tv_usec - start.tv_usec) / 1000000.0);
+#endif
     }
 
     if (!init)
     {
-        fprintf(writedest,
-                "_DRAM_ENERGY_STATUS Offset Host Socket Bits Energy_J Power_W Elapsed_sec Timestamp_sec\n");
+#ifdef CPRINTF_FOUND
+        cfprintf(writedest, "%s %s %s %s %s %s %s %s\n", //this is the same number of columns so it lines up nice
+                "_DRAM_ENERGY_STATUS", "Offset", "Host", "Socket", "Bits",
+                "Energy_J", "Power_W", "Elapsed_sec", "Timestamp_sec");
+#else
+        fprintf(writedest, "%s %s %s %s %s %s %s %s\n",
+                "_DRAM_ENERGY_STATUS", "Offset", "Host", "Socket", "Bits",
+                "Energy_J", "Power_W", "Elapsed_sec", "Timestamp_sec");
+#endif
         init = 1;
     }
     for (i = 0; i < nsockets; i++)
     {
-        fprintf(writedest, "_DRAM_ENERGY_STATUS 0x%lx %s %d 0x%lx %lf %lf %lf %lf\n",
-                msr_dram_energy_status, hostname, i, *rapl->dram_bits[i], rapl->dram_joules[i],
-                rapl->dram_watts[i], rapl->elapsed,
+#ifdef CPRINTF_FOUND
+        cfprintf(writedest, "%s %#lx %s %d %#lx %lf %lf %lf %lf\n",
+                "_DRAM_ENERGY_STATUS", msr_dram_energy_status, hostname, i, *rapl->dram_bits[i],
+                rapl->dram_joules[i], rapl->dram_watts[i], rapl->elapsed,
                 now.tv_sec - start.tv_sec + (now.tv_usec - start.tv_usec) / 1000000.0);
+#else
+        fprintf(writedest, "%s 0x%lx %s %d 0x%lx %lf %lf %lf %lf\n",
+                "_DRAM_ENERGY_STATUS", msr_dram_energy_status, hostname, i, *rapl->dram_bits[i], 
+                rapl->dram_joules[i], rapl->dram_watts[i], rapl->elapsed,
+                now.tv_sec - start.tv_sec + (now.tv_usec - start.tv_usec) / 1000000.0);
+#endif
     }
+
+#ifdef CPRINTF_FOUND
+    cflush();
+#endif 
 }
 
 void json_get_power_data(json_t *get_power_obj, off_t msr_power_limit,
