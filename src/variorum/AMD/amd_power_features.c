@@ -149,24 +149,24 @@ int print_energy_data(FILE *writedest, off_t msr_rapl_unit,
 
     get_rapl_unit(msr_rapl_unit, &val);
 
-    #ifdef CPRINTF_FOUND
+#ifdef CPRINTF_FOUND
         cfprintf(writedest, "%s  | %s  |\n", "Core", "Energy (J)");
-    #else
+#else
         fprintf(writedest, " Core   | Energy (J)   |\n");
-    #endif
+#endif
 
     for (i = 0; i < (int)ncores; i++)
     {   
-        #ifdef CPRINTF_FOUND
+#ifdef CPRINTF_FOUND
             cprintf(writedest, "%d  | %f  |\n", i, (*rapl->core_bits[i]) * val);
-        #else
+#else
             fprintf(writedest, "%6d  | %10f  |\n", i, (*rapl->core_bits[i]) * val);
-        #endif
+#endif
     }
 
-    #ifdef CPRINTF_FOUND
+#ifdef CPRINTF_FOUND
         cflush();
-    #endif
+#endif
     
     return 0;
 }
