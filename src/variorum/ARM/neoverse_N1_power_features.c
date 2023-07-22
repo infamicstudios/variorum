@@ -73,46 +73,47 @@ int arm_cpu_neoverse_n1_get_power_data(int verbose, FILE *output)
 
     if (verbose)
     {
-        #ifdef CPRINTF_FOUND
-            cfprintf(output, "%s: %s, %s: %0.2lf mW, %s: %0.2lf mW\n",
-                     "_ARM_POWER Host:", m_hostname,
-                     "CPU", (double)(cpu_power_val) / 1000.0f,
-                     "I/O", (double)(io_power_val) / 1000.0f);
-        #else
-            fprintf(output,
-                    "_ARM_POWER Host: %s, CPU: %0.2lf mW, I/O: %0.2lf mW\n",
-                    m_hostname,
-                    (double)(cpu_power_val) / 1000.0f,
-                    (double)(io_power_val) / 1000.0f);
-        #endif
+#ifdef CPRINTF_FOUND
+        cfprintf(output, "%s: %s, %s: %0.2lf mW, %s: %0.2lf mW\n",
+                    "_ARM_POWER Host:", m_hostname,
+                    "CPU", (double)(cpu_power_val) / 1000.0f,
+                    "I/O", (double)(io_power_val) / 1000.0f);
+#else
+        fprintf(output,
+                "_ARM_POWER Host: %s, CPU: %0.2lf mW, I/O: %0.2lf mW\n",
+                m_hostname,
+                (double)(cpu_power_val) / 1000.0f,
+                (double)(io_power_val) / 1000.0f);
+#endif
     }
     else
     {
         if (!init_output)
         {
-            #ifdef CPRINTF_FOUND
-                cfprintf(output, "%s %s %s\n",
-                         "_ARM_POWER", "Host", "CPU_mW I/O_mW");
-            #else
-                fprintf(output, "_ARM_POWER Host CPU_mW I/O_mW\n");
-            #endif
+#ifdef CPRINTF_FOUND
+            cfprintf(output, "%s %s %s %s\n",
+                        "_ARM_POWER", "Host", "CPU_mW", "I/O_mW");
+#else 
+            cfprintf(output, "%s %s %s %s\n",
+                        "_ARM_POWER", "Host", "CPU_mW", "I/O_mW");
+#endif
             init_output = 1;
         }
-        #ifdef CPRINTF_FOUND
-            cfprintf(output, "%s %s %0.2lf %0.2lf\n",
-                     "_ARM_POWER", m_hostname,
-                     (double)(cpu_power_val) / 1000.0f,
-                     (double)(io_power_val) / 1000.0f);
-        #else
-            fprintf(output, "_ARM_POWER %s %0.2lf %0.2lf\n",
-                    m_hostname,
+#ifdef CPRINTF_FOUND
+        cfprintf(output, "%s %s %0.2lf %0.2lf\n",
+                    "_ARM_POWER", m_hostname,
                     (double)(cpu_power_val) / 1000.0f,
                     (double)(io_power_val) / 1000.0f);
-        #endif
+#else
+        fprintf(output, "%s %s %0.2lf %0.2lf\n",
+                "_ARM_POWER", m_hostname,
+                (double)(cpu_power_val) / 1000.0f,
+                (double)(io_power_val) / 1000.0f);
+#endif
     }
-    #ifdef CPRINTF_FOUND
-        cflush();
-    #endif
+#ifdef CPRINTF_FOUND
+    cflush();
+#endif
     return 0;
 }
 
@@ -152,47 +153,48 @@ int arm_cpu_neoverse_n1_get_thermal_data(int verbose, FILE *output)
 
     if (verbose)
     {
-        #ifdef CPRINTF_FOUND
-            cfprintf(output,
-                    "%s: %s, %s: %0.2lf C, %s: %0.2lf C\n",
-                    "_ARM_TEMPERATURE Host", m_hostname,
-                    "Ethernet Controller 1", (double)(loc1_therm_val) / 1000.0f,
-                    "SoC", (double)(soc_therm_val) / 1000.0f);
-        #else
-            fprintf(output,
-                    "_ARM_TEMPERATURE Host: %s, Ethernet Controller 1: %0.2lf C, SoC: %0.2lf C\n",
-                    m_hostname,
-                    (double)(loc1_therm_val) / 1000.0f,
-                    (double)(soc_therm_val) / 1000.0f);
-        #endif
+#ifdef CPRINTF_FOUND
+        cfprintf(output,
+                "%s: %s, %s: %0.2lf C, %s: %0.2lf C\n",
+                "_ARM_TEMPERATURE Host", m_hostname,
+                "Ethernet Controller 1", (double)(loc1_therm_val) / 1000.0f,
+                "SoC", (double)(soc_therm_val) / 1000.0f);
+#else
+        fprintf(output,
+                "_ARM_TEMPERATURE Host: %s, Ethernet Controller 1: %0.2lf C, SoC: %0.2lf C\n",
+                m_hostname,
+                (double)(loc1_therm_val) / 1000.0f,
+                (double)(soc_therm_val) / 1000.0f);
+#endif
     }
     else
     {
         if (!init_output)
         {   
-            #ifdef CPRINTF_FOUND
-                cfprintf(output, "%s %s %s %s\n",
-                         "_ARM_TEMPERATURE", "Host", "EthCtr1", "SoC");
-            #else
-                fprintf(output, "_ARM_TEMPERATURE Host EthCtr1 SoC\n");
-            #endif
+#ifdef CPRINTF_FOUND
+            cfprintf(output, "%s %s %s %s\n",
+                        "_ARM_TEMPERATURE", "Host", "EthCtr1", "SoC");
+#else
+            fprintf(output, "%s %s %s %s\n",
+                        "_ARM_TEMPERATURE", "Host", "EthCtr1", "SoC");
+#endif
             init_output = 1;
         }
-        #ifdef CPRINTF_FOUND
-            cfprintf(output, "%s %s %0.2lf %0.2lf\n",
-                     "_ARM_TEMPERATURE", m_hostname,
-                     (double)(loc1_therm_val) / 1000.0f,
-                     (double)(soc_therm_val) / 1000.0f);
-        #else
-            fprintf(output, "_ARM_TEMPERATURE %s %0.2lf %0.2lf\n",
-                    m_hostname,
+#ifdef CPRINTF_FOUND
+        cfprintf(output, "%s %s %0.2lf %0.2lf\n",
+                    "_ARM_TEMPERATURE", m_hostname,
                     (double)(loc1_therm_val) / 1000.0f,
                     (double)(soc_therm_val) / 1000.0f);
-        #endif
+#else
+        fprintf(output, "%s %s %0.2lf %0.2lf\n",
+                "_ARM_TEMPERATURE", m_hostname,
+                (double)(loc1_therm_val) / 1000.0f,
+                (double)(soc_therm_val) / 1000.0f);
+#endif
     }
-    #ifdef CPRINTF_FOUND
+#ifdef CPRINTF_FOUND
         cflush();
-    #endif
+#endif
     return 0;
 }
 
