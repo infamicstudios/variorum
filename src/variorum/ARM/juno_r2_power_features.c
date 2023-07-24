@@ -211,7 +211,8 @@ int arm_cpu_juno_r2_get_thermal_data(int verbose, FILE *output)
         cfprintf(output, "%s %s %s %s %s %s\n",
                     "_ARM_TEMPERATURE", "Host", "Sys_C", "Big_C", "Little_C", "GPU_C");
 #else
-        fprintf(output, "_ARM_TEMPERATURE Host Sys_C Big_C Little_C GPU_C\n");
+        fprintf(output, "%s %s %s %s %s %s\n",
+                    "_ARM_TEMPERATURE", "Host", "Sys_C", "Big_C", "Little_C", "GPU_C");
 #endif
             init_output = 1;
         }
@@ -224,8 +225,8 @@ int arm_cpu_juno_r2_get_thermal_data(int verbose, FILE *output)
                 (double)(little_therm_val) / 1000.0f,
                 (double)(gpu_therm_val) / 1000.0f);
 #else
-        fprintf(output, "_ARM_TEMPERATURE %s %0.2lf %0.2lf %0.2lf %0.2lf\n",
-                m_hostname,
+        fprintf(output, "%s %s %0.2lf %0.2lf %0.2lf %0.2lf\n",
+                "_ARM_TEMPERATURE", m_hostname,
                 (double)(sys_therm_val) / 1000.0f,
                 (double)(big_therm_val) / 1000.0f,
                 (double)(little_therm_val) / 1000.0f,
