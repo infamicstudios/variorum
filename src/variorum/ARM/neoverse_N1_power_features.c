@@ -238,40 +238,40 @@ int arm_cpu_neoverse_n1_get_clocks_data(int chipid, int verbose, FILE *output)
     freq_val = aggregate_freq / NUM_CORES;
     if (verbose)
     {
-        #ifdef CPRINTF_FOUND
+#ifdef CPRINTF_FOUND
             cfprintf(output, "%s: %s, %s: %d, %s: %llu MHz\n",
                      "_ARM_CLOCKS Host", m_hostname,
                      "Socket", chipid,
                      "Clock", freq_val);
-        #else
+#else
             fprintf(output,
                     "_ARM_CLOCKS Host: %s, Socket: %d, Clock: %"PRIu64" MHz\n",
                     m_hostname, chipid, freq_val);
-        #endif
+#endif
     }
     else
     {
         if (!init_output)
         {   
-            #ifdef CPRINTF_FOUND
+#ifdef CPRINTF_FOUND
                 cfprintf(output, "%s %s %s %s\n",
                          "_ARM_CLOCKS", "Host", "Socket", "Clock_MHz");
-            #else
+#else
                 fprintf(output, "_ARM_CLOCKS Host Socket Clock_MHz\n");
-            #endif
+#endif
             init_output = 1;
         }
-        #ifdef CPRINTF_FOUND
+#ifdef CPRINTF_FOUND
             cfprintf(output, "%s %s %d %llu\n",
                      "_ARM_CLOCKS", m_hostname, chipid, freq_val);
-        #else
+#else
             fprintf(output, "_ARM_CLOCKS %s %d %"PRIu64"\n",
                     m_hostname, chipid, freq_val);
-        #endif
+#endif
     }
-    #ifdef CPRINTF_FOUND
+#ifdef CPRINTF_FOUND
         cflush();
-    #endif
+#endif
     return 0;
 }
 
