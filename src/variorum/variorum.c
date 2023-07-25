@@ -222,58 +222,58 @@ void variorum_print_topology(void)
 
         variorum_get_topology(NULL, NULL, NULL, i);
 
-        #ifdef CPRINTF_FOUND
-            cfprintf(stdout, "=================\n");
-            cfprintf(stdout, "Platform Topology\n");
-            cfprintf(stdout, "=================\n");
-            cfprintf(stdout, "  %-s: %-s\n", "Hostname", g_platform[i].hostname);
-            cfprintf(stdout, "  %-s: %-d\n", "Num Sockets", g_platform[i].num_sockets);
-            cfprintf(stdout, "  %-s: %-d\n", "Num Cores per Socket",
-                    g_platform[i].num_cores_per_socket);
-            cfprintf(stdout, "  %-s: %-d\n", "Num Threads per Core",
-                    g_platform[i].num_threads_per_core);
-            if (g_platform[i].num_threads_per_core == 1)
-            {
-                cfprintf(stdout, "  %-s: %-s\n", "  Hyperthreading", "No");
-            }
-            else
-            {
-                cfprintf(stdout, "  %-s: %-s\n", "  Hyperthreading", "Yes");
-            }
-            
-            cfprintf(stdout, "\n");
-            cfprintf(stdout, "  %-s: %-d\n", "Total Num of Cores", g_platform[i].total_cores);
-            cfprintf(stdout, "  %-s: %-d\n", "Total Num of Threads", g_platform[i].total_threads);
-            cfprintf(stdout, "\n");
-            cfprintf(stdout, "Layout:\n");
-            cfprintf(stdout, "-------\n");
-            cflush();
-        #else
-            fprintf(stdout, "=================\n");
-            fprintf(stdout, "Platform Topology\n");
-            fprintf(stdout, "=================\n");
-            fprintf(stdout, "  Hostname            : %s\n", g_platform[i].hostname);
-            fprintf(stdout, "  Num Sockets         : %d\n", g_platform[i].num_sockets);
-            fprintf(stdout, "  Num Cores per Socket: %d\n",
-                    g_platform[i].num_cores_per_socket);
-            fprintf(stdout, "  Num Threads per Core: %d\n",
-                    g_platform[i].num_threads_per_core);
-            if (g_platform[i].num_threads_per_core == 1)
-            {
-                fprintf(stdout, "    Hyperthreading    : No\n");
-            }
-            else
-            {
-                fprintf(stdout, "    Hyperthreading    : Yes\n");
-            }
-            fprintf(stdout, "\n");
-            fprintf(stdout, "  Total Num of Cores  : %d\n", g_platform[i].total_cores);
-            fprintf(stdout, "  Total Num of Threads: %d\n", g_platform[i].total_threads);
-            fprintf(stdout, "\n");
-            fprintf(stdout, "Layout:\n");
-            fprintf(stdout, "-------\n");
-            fprintf(stdout, "Thread HWThread Core Socket\n");
-        #endif
+#ifdef CPRINTF_FOUND
+        cfprintf(stdout, "=================\n");
+        cfprintf(stdout, "Platform Topology\n");
+        cfprintf(stdout, "=================\n");
+        cfprintf(stdout, "  %-s: %-s\n", "Hostname", g_platform[i].hostname);
+        cfprintf(stdout, "  %-s: %-d\n", "Num Sockets", g_platform[i].num_sockets);
+        cfprintf(stdout, "  %-s: %-d\n", "Num Cores per Socket",
+                g_platform[i].num_cores_per_socket);
+        cfprintf(stdout, "  %-s: %-d\n", "Num Threads per Core",
+                g_platform[i].num_threads_per_core);
+        if (g_platform[i].num_threads_per_core == 1)
+        {
+            cfprintf(stdout, "  %-s: %-s\n", "  Hyperthreading", "No");
+        }
+        else
+        {
+            cfprintf(stdout, "  %-s: %-s\n", "  Hyperthreading", "Yes");
+        }
+        
+        cfprintf(stdout, "\n");
+        cfprintf(stdout, "  %-s: %-d\n", "Total Num of Cores", g_platform[i].total_cores);
+        cfprintf(stdout, "  %-s: %-d\n", "Total Num of Threads", g_platform[i].total_threads);
+        cfprintf(stdout, "\n");
+        cfprintf(stdout, "Layout:\n");
+        cfprintf(stdout, "-------\n");
+        cflush();
+#else
+        fprintf(stdout, "=================\n");
+        fprintf(stdout, "Platform Topology\n");
+        fprintf(stdout, "=================\n");
+        fprintf(stdout, "  Hostname            : %s\n", g_platform[i].hostname);
+        fprintf(stdout, "  Num Sockets         : %d\n", g_platform[i].num_sockets);
+        fprintf(stdout, "  Num Cores per Socket: %d\n",
+                g_platform[i].num_cores_per_socket);
+        fprintf(stdout, "  Num Threads per Core: %d\n",
+                g_platform[i].num_threads_per_core);
+        if (g_platform[i].num_threads_per_core == 1)
+        {
+            fprintf(stdout, "    Hyperthreading    : No\n");
+        }
+        else
+        {
+            fprintf(stdout, "    Hyperthreading    : Yes\n");
+        }
+        fprintf(stdout, "\n");
+        fprintf(stdout, "  Total Num of Cores  : %d\n", g_platform[i].total_cores);
+        fprintf(stdout, "  Total Num of Threads: %d\n", g_platform[i].total_threads);
+        fprintf(stdout, "\n");
+        fprintf(stdout, "Layout:\n");
+        fprintf(stdout, "-------\n");
+        fprintf(stdout, "Thread HWThread Core Socket\n");
+#endif
 
         print_children(topo, hwloc_get_root_obj(topo), 0);
         hwloc_topology_destroy(topo);

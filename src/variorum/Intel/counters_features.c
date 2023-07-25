@@ -1275,7 +1275,7 @@ void get_all_power_data_fixed(FILE *writedest, off_t msr_pkg_power_limit,
         }
         for (i = 0; i < nthreads; i++)
         {
-            fprintf(writedest, //TODO this is gonna be tricky to do.
+            fprintf(writedest, //TODO this is gonna be tricky to do...
                     " InstRet%d UnhaltClkCycles%d UnhaltRefCycles%d APERF%d MPERF%d TSC%d", i, i, i,
                     i, i, i);
         }
